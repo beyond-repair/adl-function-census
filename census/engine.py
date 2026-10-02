@@ -1,18 +1,24 @@
+"""Run the locked module-surface census checker. Does not crawl GitHub."""
+
 from __future__ import annotations
 
 from .inventory import COMPATIBLE_BUILDS, ENUMERATED_PUBLIC_REPOS, REPOS, SNAPSHOT_DATE
-from .validate import assert_valid
+from .validate import validate
 
 
 def summary() -> dict:
-    assert_valid()
+    errors = validate()
     by_cluster: dict[str, int] = {}
     by_cap: dict[str, int] = {}
     module_surfaces = 0
     for rec in REPOS.values():
-        by_cluster[rec["cluster"]] = by_cluster.get(rec["cluster"], 0) + 1
-        by_cap[rec["cap"]] = by_cap.get(rec["cap"], 0) + 1
-        if rec["cap"] == "MODULE_SURFACE":
+        cluster = rec.get("cluster")
+        cap = rec.get("cap")
+        if isinstance(cluster, str):
+            by_cluster[cluster] = by_cluster.get(cluster, 0) + 1
+        if isinstance(cap, str):
+            by_cap[cap] = by_cap.get(cap, 0) + 1
+        if cap == "MODULE_SURFACE":
             module_surfaces += 1
     return {
         "snapshot_date": SNAPSHOT_DATE,
@@ -23,18 +29,31 @@ def summary() -> dict:
         "by_cap": by_cap,
         "module_surfaces": module_surfaces,
         "queue": COMPATIBLE_BUILDS,
+        "errors": errors,
+        "ok": not errors,
     }
 
 
-def main() -> None:
-    s = summary()
-    print(f"snapshot={s['snapshot_date']} locked={s['locked_records']} github={s['github_public_enumerated']}")
-    print("clusters", s["by_cluster"])
-    print("caps", s["by_cap"])
-    print("module_surfaces", s["module_surfaces"])
-    for q in s["queue"]:
-        print(f"{q['id']} {q['status']} {q['name']}")
+def main() -> int:
+    report = summary()
+    print(
+        "snapshot="
+        f"{report['snapshot_date']} locked={report['locked_records']} "
+        f"github={report['github_public_enumerated']}"
+    )
+    print("clusters", report["by_cluster"])
+    print("caps", report["by_cap"])
+    print("module_surfaces", report["module_surfaces"])
+    for item in report["queue"]:
+        print(f"{item.get('id')} {item.get('status')} {item.get('name')}")
+    if report["errors"]:
+        print("ERRORS:")
+        for err in report["errors"]:
+            print(" -", err)
+        return 1
+    print("OK")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
