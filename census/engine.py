@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .drift import drift_line
 from .inventory import COMPATIBLE_BUILDS, ENUMERATED_PUBLIC_REPOS, REPOS, SNAPSHOT_DATE
 from .validate import validate
 
@@ -29,6 +30,7 @@ def summary() -> dict:
         "by_cap": by_cap,
         "module_surfaces": module_surfaces,
         "queue": COMPATIBLE_BUILDS,
+        "drift_line": drift_line(),
         "errors": errors,
         "ok": not errors,
     }
@@ -46,6 +48,7 @@ def main() -> int:
     print("module_surfaces", report["module_surfaces"])
     for item in report["queue"]:
         print(f"{item.get('id')} {item.get('status')} {item.get('name')}")
+    print(report["drift_line"])
     if report["errors"]:
         print("ERRORS:")
         for err in report["errors"]:
