@@ -57,8 +57,15 @@ Q-FUNC-002 NOT_BUILT sunder-cleanroom-vsa-adapter
 Q-FUNC-003 NOT_BUILT seem-identity-unifier
 Q-FUNC-004 NOT_BUILT os-constitution-merge
 Q-FUNC-005 NOT_BUILT workforce-lineage-graph
+DRIFT observed=2026-10-06 search_total=83 not_a_relock snapshot_remains=2026-09-05 locked=57 github=68
 OK
 ```
+
+## Observed drift (not a re-lock)
+
+Sweep-252 (2026-10-06) observed GitHub search `user:beyond-repair` `total_count` 83 (`incomplete_results` false) and profile `public_repos` 78, with 9 private names in the search payload. That observation is printed as a `DRIFT` line. It does **not** replace `SNAPSHOT_DATE=2026-09-05`, `ENUMERATED_PUBLIC_REPOS=68`, or the 57 locked records.
+
+`Q-FUNC-002` (`sunder-cleanroom-vsa-adapter`) and `Q-FUNC-003` (`seem-identity-unifier`) now exist as repository names. Status stays `NOT_BUILT` in this lock: existence is not a module-surface audit and is not a SUPERSEDES proof. `Q-FUNC-004` still names `os-constitution-merge`, which is absent; `os-family-constitution-map` is a different name and is not recorded here.
 
 `requirements.txt` pins the same pytest for a root-directory run without installing the package. That path only works when the current directory is the repository root, because Python then imports the local `census` package:
 
@@ -90,13 +97,11 @@ The checker validates records already in this repo. It does not invent rows or a
 | Duplicate SEEM / Digital Double / SovereignOS names are distinct identities | Equivalence of duplicate repos |
 | The checker enforces the contract above on the committed records | Currency of this lock with any later portfolio census |
 
-
 ## Related
 
 - `ADL-Governance`, `ADL-SEEM`, `forge-aegis`
 - `ADL-Portfolio-Census`, `aegis-repo-graph`, `adl-capability-matrix`
 - `sunder`, `sovereign-clean-room`
-
 
 ---
 
