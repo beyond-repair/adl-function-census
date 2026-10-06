@@ -12,7 +12,7 @@ from census.engine import summary
 
 
 def test_package_version():
-    assert __version__ == "0.1.1"
+    assert __version__ == "0.1.2"
 
 
 def test_valid():
@@ -74,6 +74,8 @@ def test_engine_cli_reports_locked_snapshot():
     assert lines[-1] == "OK"
     assert "module_surfaces 3" in lines
     assert "Q-FUNC-001 THIS_REPO adl-function-census" in lines
+    assert any(line.startswith("DRIFT observed=2026-10-06 ") for line in lines)
+    assert lines[-2].startswith("DRIFT observed=2026-10-06 ")
     assert proc.stderr == ""
 
 
@@ -130,3 +132,22 @@ def test_missing_this_repo_fails():
     builds = [item for item in COMPATIBLE_BUILDS if item["status"] != "THIS_REPO"]
     errors = validate(builds=builds)
     assert any("exactly one THIS_REPO queue item required" in err for err in errors)
+
+
+def test_drift_does_not_relock():
+    from census.drift import (
+        OBSERVED_SEARCH_TOTAL,
+        QUEUE_NAME_EXISTS,
+        drift_line,
+    )
+    from census.inventory import ENUMERATED_PUBLIC_REPOS, REPOS, SNAPSHOT_DATE
+
+    report = summary()
+    assert SNAPSHOT_DATE == "2026-09-05"
+    assert ENUMERATED_PUBLIC_REPOS == 68
+    assert len(REPOS) == 57
+    assert OBSERVED_SEARCH_TOTAL == 83
+    assert "not_a_relock" in drift_line()
+    assert report["drift_line"] == drift_line()
+    for name in QUEUE_NAME_EXISTS.values():
+        assert name not in REPOS
